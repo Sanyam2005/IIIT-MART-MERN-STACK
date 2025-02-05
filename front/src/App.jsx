@@ -1,5 +1,7 @@
 import { useState } from 'react'
-
+import { Suspense } from 'react';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import './App.css'
 import Signup from "./pages/Signup.jsx"
 import Login from "./pages/Login.jsx"
@@ -18,13 +20,18 @@ import ProductPage from './pages/ProductPage.jsx'
 import SellerDashboard from './pages/SellerDashboard.jsx'
 import IIITMartLandingPage from './pages/landing.jsx'
 function App() {
-
+  const LoadingSkeleton = () => (
+    <div>
+      <Skeleton height={40} count={5} />
+    </div>
+  );
   
 
   return (
     <>
   
     <Router>
+    <Suspense fallback={<LoadingSkeleton />}>
       <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />}></Route>
@@ -40,6 +47,7 @@ function App() {
         <Route path="/" element={<IIITMartLandingPage/>} />
         <Route path="/seller" element={<SellerDashboard />}></Route>
       </Routes>
+      </Suspense>
     </Router>
 
      

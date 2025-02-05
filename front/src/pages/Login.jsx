@@ -12,7 +12,7 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState("");
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [username, setUser] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   axios.defaults.withCredentials = true;
 
   const handleChange = (e) => {
@@ -26,17 +26,20 @@ function Login() {
       setErrorMessage("Please complete the reCAPTCHA.");
       return;
     }
+    setLoading(true);
     try {
       const response = await axios.post(`${baseURL}/login`,{
           username: formData.username,
           password: formData.password,
           recaptchaToken});
+          setLoading(false);
       if (response.data.message === "Login successful") {
         navigate("/home");
       } else {
         setErrorMessage(response.data.message || "An error occurred.");
       }
     } catch (error) {
+      setLoading(false);
       console.error("Error submitting form data:", error);
       setErrorMessage(error.response.data.message || "An error occurred.");
     }
@@ -174,8 +177,9 @@ function Login() {
               <button
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-gray-700 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                disabled={loading}
               >
-                Sign in
+                {loading ? "Signing in..." : "Sign in"}
               </button>
             </div>
           </form>

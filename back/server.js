@@ -822,7 +822,7 @@ app.post('/logout', (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
+        sameSite: 'none'
     });
     const casLogoutUrl = `${casConfig.cas_url}/logout?service=${casConfig.service_url}`;
     res.json({ message: 'Logout successful', casLogoutUrl });

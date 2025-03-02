@@ -16,11 +16,7 @@ const cookieParser = require('cookie-parser');
 const xml2js = require('xml2js');
 const app = express();
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const casConfig = {
-    cas_url: 'https://login.iiit.ac.in/cas',
-    service_url: 'http://localhost:3001', // Replace with your domain
-    cas_version: '3.0',
-  };
+
 const genAI = new GoogleGenerativeAI("AIzaSyCcaHCbkJ7o9ziZHcELVznbj0xpsqgM9pQ");
 
 const RECAPTCHA_SECRET = "6LdZfMoqAAAAAG8CP-wALzp9BERM2GxMWCj-vuR1";
@@ -128,8 +124,8 @@ app.post("/login", async (req, res) => {
        
         res.cookie("token", token, { 
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Important for HTTPS in production
-            sameSite: 'none', // Recommended for security
+            secure: process.env.NODE_ENV !== 'development', // Important for HTTPS in production
+            sameSite: process.env.NODE_ENV === 'development' ?  'lax':'none',
             maxAge: 24 * 60 * 60 * 1000 // 1 day in milliseconds
         });
         return res.json({ message: "Login successful" });
@@ -139,84 +135,8 @@ app.post("/login", async (req, res) => {
         return res.status(500).json({ message: "Error verifying reCAPTCHA." });
     }
 });
-app.get("/cas/login", (req, res) => {
-    const loginUrl = `${casConfig.cas_url}/login?service=${encodeURIComponent(
-        casConfig.service_url + "/cas/callback"
-      )}`;
-      res.status(200).json({ success: true, message: "Redirecting to CAS login", loginUrl });
-  });
-const validateCasTicket = async (ticket) => {
-    try {
-      const validateUrl = `${casConfig.cas_url}/p3/serviceValidate?service=${encodeURIComponent(casConfig.service_url + "/cas/callback")}&ticket=${ticket}`;
-      const response = await axios.get(validateUrl);
-  
-      return new Promise((resolve, reject) => {
-        xml2js.parseString(response.data, (err, result) => {
-          if (err) reject(err);
-  
-          const serviceResponse = result["cas:serviceResponse"];
-          if (serviceResponse["cas:authenticationSuccess"]) {
-            const success = serviceResponse["cas:authenticationSuccess"][0];
-            const user = {
-              email: success["cas:user"][0],
-              attributes: success["cas:attributes"]
-                ? success["cas:attributes"][0]
-                : {},
-            };
-            resolve(user);
-          } else {
-            reject(new Error("CAS Authentication failed"));
-          }
-        });
-      });
-    } catch (err) {
-      throw new Error(`CAS Validation failed: ${err.message}`);
-    }
-  };
-  app.get("/cas/callback", async (req, res) => {
-    console.log("CAS callback reached in backend");
-    try {
-      const { ticket } = req.query;
-      if (!ticket) {
-        return res.redirect('/login');
-      }
-      const userData = await validateCasTicket(ticket);
-      console.log("User data:", userData);
-        if(userData){
-        console.log("user is validated");
-        const user = await userModel.findOne({ email: userData.email });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
 
-        
-        const token = jwt.sign(
-            { email: user.email, seller_id: user._id, firstname: user.firstName, lastname: user.lastName },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
-        );
 
-       
-        res.cookie("token", token, { 
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 24 * 60 * 60 * 1000
-          });
-        
-        return res.redirect(`http://localhost:5173/home`);
-
-      }
-      else{
-        console.log("user is not validated");
-        res.redirect(" http://localhost:5173/login");
-      }
-    } catch (error) {
-      console.error('CAS authentication error:', error);
-      res.redirect(" http://localhost:5173/login");
-    }
-  });
-  
 
 
 
@@ -821,11 +741,12 @@ app.post('/api/update-product-price', verifyToken, async (req, res) => {
 app.post('/logout', (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none'
+        secure: process.env.NODE_ENV !== 'development', // Important for HTTPS in production
+        sameSite: process.env.NODE_ENV === 'development' ?  'lax':'none',
+        
     });
-    const casLogoutUrl = `${casConfig.cas_url}/logout?service=${casConfig.service_url}`;
-    res.json({ message: 'Logout successful', casLogoutUrl });
+    res.status(200).json({ message: 'Logged out successfully' });
+
 });
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

@@ -6,8 +6,7 @@ import ProductCard from '../components/card';
 import Footer from '../components/Footer';
 import { useParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+
 
 function Buy() {
     const { productId } = useParams();

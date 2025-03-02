@@ -24,10 +24,10 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Validation logic -uncomment the below code to validate email
-            if (!formData.email.endsWith('@iiit.ac.in')) {
-                setErrorMessage('Email must be an IIIT email address.');
-                return;
-            }
+            // if (!formData.email.endsWith('@iiit.ac.in')) {
+            //     setErrorMessage('Email must be an IIIT email address.');
+            //     return;
+            // }
             try {
                 const response = await axios.post(`${baseURL}/signup`, formData);
                 console.log('Form data submitted:', response.data);

@@ -7,6 +7,16 @@ import VertNav from '../components/VertNav';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const ProductForm = () => {
+  const initialProductState = {
+    img: '',
+    ProductName: '',
+    ProductPrice: '',
+    ProductDesc: '',
+    ProductCategory: '',
+    SellerID: ''
+  };
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
   const baseURL = import.meta.env.VITE_API_URL;
   const [imagePreview, setImagePreview] = useState(null);
@@ -49,6 +59,8 @@ const ProductForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading state
+
     const formData = new FormData();
     formData.append('img', image);
     formData.append('ProductName', ProductData.ProductName);
@@ -61,13 +73,24 @@ const ProductForm = () => {
       const response = await axios.post(`${baseURL}/product/add`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      setErrorMessage(response.data.message === 'Product Added' 
-        ? 'Product added successfully' 
-        : 'Error in adding product');
+      if (response.data.message === 'Product Added') {
+        setErrorMessage('Product added successfully');
+        // Reset form data
+        setProductData(prevState => ({ ...initialProductState, SellerID: prevState.SellerID }));
+        setImage(null);
+        setImagePreview(null);
+        
+        // Reset form fields
+        e.target.reset();
+      } else {
+        setErrorMessage('Error in adding product');
+      }
     } catch (error) {
       console.error('Error submitting form data:', error);
       setErrorMessage('Error submitting form data.');
-    }
+    }finally {
+      setIsLoading(false); // End loading state
+  }
   };
 
   return (
@@ -195,12 +218,27 @@ const ProductForm = () => {
               )}
 
               <div className="flex justify-end mt-8">
-                <button
-                  type="submit"
-                  className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150"
-                >
-                  Add Product
-                </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`px-6 py-3 font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ${
+                    isLoading 
+                        ? 'bg-blue-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                } text-white`}
+            >
+                {isLoading ? (
+                    <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Adding Product...
+                    </span>
+                ) : (
+                    'Add Product'
+                )}
+            </button>
               </div>
             </form>
           </div>

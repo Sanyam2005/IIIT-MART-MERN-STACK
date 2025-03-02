@@ -104,9 +104,29 @@ function Buy() {
         <div className="w-full grid grid-cols-1">
             <Navbar />
             {loading ? (
-                <div className="flex justify-center items-center min-h-screen">
-                    <Skeleton height={40} count={5} />
-                </div>
+                 <div className="pt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-16">
+                 {[...Array(8)].map((_, index) => (
+                     <div key={index} className="bg-white rounded-lg shadow-md p-4 animate-pulse">
+                         {/* Image skeleton */}
+                         <div className="w-full h-48 bg-gray-200 rounded-md mb-4"></div>
+                         
+                         {/* Title skeleton */}
+                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                         
+                         {/* Price skeleton */}
+                         <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                         
+                         {/* Description skeleton */}
+                         <div className="space-y-2">
+                             <div className="h-3 bg-gray-200 rounded w-full"></div>
+                             <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                         </div>
+                         
+                         {/* Button skeleton */}
+                         <div className="h-8 bg-gray-200 rounded mt-4"></div>
+                     </div>
+                 ))}
+             </div>
             ) : (
                 <>
                     <div className="pt-20 pb-6">
